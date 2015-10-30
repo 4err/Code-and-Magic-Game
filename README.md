@@ -1,6 +1,8 @@
 # Code-and-Magick-Game
 Репозиторий используется для создания расширеной версии игры "Код и магия", придуманной в <a href='http://htmlacademy.ru'>HTMLAcademy</a>.
 
+* GitHub Pages  - <a href="http://4err.github.io/Code-and-Magic-Game">Демо</a>
+
 # План разработки.
 * Новая игра. Новый сайт.
 * Grunt + browserify (require.js);
