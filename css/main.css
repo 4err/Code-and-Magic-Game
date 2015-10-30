@@ -1,0 +1,92 @@
+@font-face {
+  font-family: 'pixel_cyrnormal';
+  src: url('../fonts/rlragd94-webfont.eot');
+  src: url('../fonts/rlragd94-webfont.eot?#iefix') format('embedded-opentype'),
+       url('../fonts/rlragd94-webfont.woff2') format('woff2'),
+       url('../fonts/rlragd94-webfont.woff') format('woff'),
+       url('../fonts/rlragd94-webfont.ttf') format('truetype'),
+       url('../fonts/rlragd94-webfont.svg#pixel_cyrnormal') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #da641a;
+  color: #fff;
+  font: 20px 'PT Mono';
+  margin: 0 auto;
+  min-width: 1024px;
+}
+
+h1,
+h2 {
+  font-family: 'pixel_cyrnormal';
+  text-align: center;
+  text-shadow: 5px 5px 0 rgba(0, 0, 0, 0.72);
+}
+
+.main-area {
+  background: #2b5cfc;
+  background: linear-gradient(180deg, #0000ff, #94c6fd);
+  border-bottom: solid 8px #1cb34d;
+  padding-top: 80px;
+  position: relative;
+  text-align: center;
+  height: 500px;
+}
+
+.header-clouds {
+  background: url('../img/clouds.png') top center repeat-x;
+  height: 363px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 0;
+}
+
+.header-fence {
+  background: url('../img/fence.gif') no-repeat;
+  bottom: 0;
+  height: 48px;
+  left: 50%;
+  margin-left: -400px;
+  position: absolute;
+  width: 91px;
+}
+
+.header-tree {
+  background: url('../img/tree.gif') no-repeat;
+  bottom: 0;
+  height: 137px;
+  left: 50%;
+  margin-left: 300px;
+  position: absolute;
+  width: 120px;
+}
+
+
+.header-title {
+  font-size: 69px;
+  margin: 0 0 28px;
+  padding: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.demo {
+  position: absolute;
+  bottom: 0;
+  height: 500px;
+  width: 100%;
+}
+
+main {
+  background: linear-gradient(180deg, #ae340a, #fcb945);
+}

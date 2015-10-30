@@ -1,0 +1,13 @@
+{
+  "name": "Code-and-Magic-Game",
+  "version": "0.0.1",
+  "description": "Обучающий проект «code-and-magick» от HTML Academy",
+  "author": "Денис Байдаров",
+  "homepage": "https://github.com/js-htmlacademy/7956-code-and-magick",
+  "devDependencies": {
+    "browserify": "*",
+    "grunt": "~0.4.0",
+    "grunt-browserify": "latest",
+    "grunt-contrib-watch": "latest"
+  }
+}
