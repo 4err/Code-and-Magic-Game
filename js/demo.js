@@ -13,6 +13,8 @@
 
   var wizard = new Wizard();
 
+  wizard.setFloor(Game.field.height);
+
   Game.addEntity(wizard);
 
   Game.run = (function() {
