@@ -5,17 +5,19 @@
   var Game = require('./game.js');
   var Key = require('./key.js').Key;
   var Wizard = require('./wizard.js');
+    var Fireball = require('./fireball.js');
 
   var demo_container = document.querySelector(".demo");
-  console.log(Game);
   Game.initialize();
   Key.init();
 
   var wizard = new Wizard();
+  var fireball = new Fireball(0, 0, 'right');
 
   wizard.setFloor(Game.field.height);
 
   Game.addEntity(wizard);
+  Game.addEntity(fireball);
 
   Game.run = (function() {
     var loops = 0,

@@ -5,6 +5,7 @@
     "left": 37,
     "right": 39,
     "down": 40,
+    "ctrl": 17
   }
 
   var keyCodesMap = [37, 38, 39, 40];

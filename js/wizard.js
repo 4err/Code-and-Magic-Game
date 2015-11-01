@@ -1,19 +1,20 @@
   var Keys = require('./key.js');
   var Key = Keys.Key;
   var keyCodes = Keys.keyCodes;
+
+  var Fireball = require('./fireball.js');
+
   var JUMP_TIME = 30;
   var JUMP_FORCE = 10;
+  var JUMP_DELAY = 20;
 
   function Wizard() {
-//    this.w = 93;
-//    this.h = 90;
-//    this.speed = 5;
     this.image = new Image();
     this.image.src = 'img/wizard.png';
     this.direction = 'right';
-//    this.x = 0;
-//    this.y = 0;
-//    this.mass = 5;
+    this.fly = 0;
+    this.fireball = 1;
+
     this.wizardParams = {
       w: 93,
       h: 90,
@@ -26,8 +27,9 @@
     this.jumpParams = {
       force: JUMP_FORCE,
       time: JUMP_TIME,
-      delay: 3,
-      minHeight: JUMP_TIME/2
+      delay: JUMP_DELAY,
+      minHeight: JUMP_TIME / 3,
+      currJumpTime: 0
     };
 
     /*Границы мира*/
@@ -66,6 +68,7 @@
 
     if (this.wizardParams.y < this.floor) {
       this.wizardParams.y += this.wizardParams.mass;
+      this.fly = 1;
     }
 
     if (this.wizardParams.y > this.floor) {
@@ -73,7 +76,14 @@
     }
 
     if (this.wizardParams.y === this.floor) {
-      this.jumpParams.time = JUMP_TIME;
+      this.fly = 0;
+
+      if (this.jumpParams.delay > 0) {
+        this.jumpParams.delay--;
+      } else {
+        this.jumpParams.currJumpTime = 0;
+        this.jumpParams.delay = JUMP_DELAY;
+      }
     }
 
   }
@@ -95,15 +105,14 @@
   }
 
   Wizard.prototype.jump = function() {
-    if (this.jumpParams.time > 0) {
-      this.wizardParams.y -= this.jumpParams.force;
-      --this.jumpParams.time;
+    if (this.jumpParams.currJumpTime < this.jumpParams.time) {
+      var force = this.jumpParams.force - ((this.jumpParams.currJumpTime / (this.jumpParams.force)) * 2 | 0);
+      this.wizardParams.y -= force;
+      this.jumpParams.currJumpTime++;
     }
   }
 
-  Wizard.prototype.update = function() {
-    this.checkGravitation();
-
+  Wizard.prototype.keyBindings = function() {
     if (Key.map[keyCodes.right]) {
       this.moveTo('right');
     }
@@ -113,6 +122,26 @@
     if (Key.map[keyCodes.up]) {
       this.jump();
     }
+    if ((!Key.map[keyCodes.up]) && this.fly && (this.jumpParams.currJumpTime <= this.jumpParams.minHeight)) {
+      this.jump();
+    }
+    if ((!Key.map[keyCodes.up]) && this.fly && (this.jumpParams.currJumpTime > this.jumpParams.minHeight)) {
+      this.jumpParams.currJumpTime = JUMP_TIME;
+    }
+
+    if (Key.map[keyCodes.ctrl]) {
+      if (this.fireball) {
+        this.fireball = 0;
+        console.log('Fireball!');
+        var fireball = new Fireball(this.wizardParams.x, this.wizardParams.y, this.direction);
+        fireball.draw();
+      }
+    }
+  }
+
+  Wizard.prototype.update = function() {
+    this.checkGravitation();
+    this.keyBindings();
   }
 
   Wizard.prototype.setFloor = function(y) {
