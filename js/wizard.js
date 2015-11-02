@@ -33,14 +33,6 @@
       currJumpTime: 0
     };
 
-    //    this.fireballParams = {
-    //      startX: 0,
-    //      startY: 0,
-    //      direction: 'direction',
-    //      lifetime: 100,
-    //      speed: 10
-    //    }
-
     /*Границы мира*/
     this.leftBorder = 0;
     this.rightBorder = 1024 - this.wizardParams.w;
