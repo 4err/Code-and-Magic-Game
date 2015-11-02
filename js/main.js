@@ -1,4 +1,22 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/**
+ * Created by ����� on 02.11.2015.
+ */
+module.exports = (function(cb) {
+    if (window.requestAnimationFrame) {
+        return function(cb) {
+            var _cb = function() {
+                cb();
+                requestAnimationFrame(_cb);
+            }
+            _cb();
+        };
+    }
+    return function(cb) {
+        setInterval(cb, 1000 / 60);
+    };
+});
+},{}],2:[function(require,module,exports){
 "use stirct";
 
 (function() {
@@ -6,61 +24,20 @@
   var Game = require('./game.js');
   var Key = require('./key.js').Key;
   var Wizard = require('./wizard.js');
-  var Fireball = require('./fireball.js');
+  var onEachFrame = require('./animationFrame.js')();
 
-  var demo_container = document.querySelector(".demo");
   Game.initialize();
   Key.init();
 
   var wizard = new Wizard();
-
   wizard.setFloor(Game.field.height);
-
   Game.addEntity(wizard);
 
-  Game.run = (function() {
-    var loops = 0,
-      skipTicks = 1000 / Game.fps,
-      maxFrameSkip = 10,
-      nextGameTick = (new Date).getTime();
-
-    return function() {
-      loops = 0;
-
-      while ((new Date).getTime() > nextGameTick) {
-        Game.update();
-        nextGameTick += skipTicks;
-        loops++;
-      }
-
-      Game.draw();
-    };
-  })();
-
-  (function() {
-    var onEachFrame;
-    if (window.requestAnimationFrame) {
-      onEachFrame = function(cb) {
-        var _cb = function() {
-          cb();
-          requestAnimationFrame(_cb);
-        }
-        _cb();
-      };
-    } else {
-      onEachFrame = function(cb) {
-        setInterval(cb, 1000 / 60);
-      }
-    }
-
-    window.onEachFrame = onEachFrame;
-  })();
-
-  window.onEachFrame(Game.run);
+  onEachFrame(Game.run);
 
 })();
 
-},{"./fireball.js":2,"./game.js":3,"./key.js":4,"./wizard.js":5}],2:[function(require,module,exports){
+},{"./animationFrame.js":1,"./game.js":4,"./key.js":5,"./wizard.js":6}],3:[function(require,module,exports){
 function Fireball(x, y, direction) {
   this.startX = x;
   this.startY = y;
@@ -101,7 +78,7 @@ Fireball.prototype.update = function() {
 
 module.exports = Fireball;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 "use stirct";
 
 var Game = {};
@@ -126,13 +103,31 @@ Game.update = function() {
   }
 }
 
+Game.run = (function() {
+  var loops = 0,
+      skipTicks = 1000 / Game.fps,
+      maxFrameSkip = 10,
+      nextGameTick = (new Date).getTime();
+
+  return function() {
+    loops = 0;
+
+    while ((new Date).getTime() > nextGameTick) {
+      Game.update();
+      nextGameTick += skipTicks;
+      loops++;
+    }
+
+    Game.draw();
+  };
+})();
 Game.addEntity = function(entity) {
   Game.entities.push(entity);
 };
 
 module.exports = Game;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
   var Key = {};
 
   var keyCodes = {
@@ -164,7 +159,7 @@ module.exports = Game;
   module.exports.Key = Key;
   module.exports.keyCodes = keyCodes;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
   var Keys = require('./key.js');
   var Key = Keys.Key;
   var keyCodes = Keys.keyCodes;
@@ -199,14 +194,6 @@ module.exports = Game;
       minHeight: JUMP_TIME / 3,
       currJumpTime: 0
     };
-
-    //    this.fireballParams = {
-    //      startX: 0,
-    //      startY: 0,
-    //      direction: 'direction',
-    //      lifetime: 100,
-    //      speed: 10
-    //    }
 
     /*Границы мира*/
     this.leftBorder = 0;
@@ -347,4 +334,4 @@ module.exports = Game;
 
   module.exports = Wizard;
 
-},{"./fireball.js":2,"./key.js":4}]},{},[1]);
+},{"./fireball.js":3,"./key.js":5}]},{},[2]);
