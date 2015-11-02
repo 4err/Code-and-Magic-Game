@@ -9,11 +9,12 @@
   var JUMP_DELAY = 20;
 
   function Wizard() {
-    this.image = new Image();
-    this.image.src = 'img/wizard.png';
+    this.wizardImage = new Image();
+    this.wizardImage.src = 'img/wizard.png';
+
     this.direction = 'right';
     this.fly = 0;
-    this.fireball = 1;
+    this.canShootFireball = 1;
 
     this.wizardParams = {
       w: 93,
@@ -32,16 +33,27 @@
       currJumpTime: 0
     };
 
+    //    this.fireballParams = {
+    //      startX: 0,
+    //      startY: 0,
+    //      direction: 'direction',
+    //      lifetime: 100,
+    //      speed: 10
+    //    }
+
     /*Границы мира*/
     this.leftBorder = 0;
     this.rightBorder = 1024 - this.wizardParams.w;
     this.floor = 0;
+
+    this.fireballsArray = [];
+    //    this.drawArray.push(this.drawWizard);
   }
 
-  Wizard.prototype.draw = function(context) {
+  Wizard.prototype.drawWizard = function(context) {
     if (this.direction == 'right') {
       context.drawImage(
-        this.image,
+        this.wizardImage,
         0,
         0,
         this.wizardParams.w,
@@ -52,7 +64,7 @@
         this.wizardParams.h);
     } else {
       context.drawImage(
-        this.image,
+        this.wizardImage,
         0 + this.wizardParams.w,
         0,
         this.wizardParams.w,
@@ -129,23 +141,41 @@
       this.jumpParams.currJumpTime = JUMP_TIME;
     }
 
-    if (Key.map[keyCodes.ctrl]) {
-      if (this.fireball) {
-        this.fireball = 0;
-        console.log('Fireball!');
+    if (Key.map[keyCodes.space]) {
+      if (this.canShootFireball) {
+        this.canShootFireball = 0;
         var fireball = new Fireball(this.wizardParams.x, this.wizardParams.y, this.direction);
-        fireball.draw();
+        this.fireballsArray.push(fireball);
+        setTimeout(function() {
+          this.fireballsArray.shift();
+        }.bind(this), 1000);
+        setTimeout(function() {
+          this.canShootFireball = 1;
+        }.bind(this), 300);
       }
     }
+  }
+
+  Wizard.prototype.setFloor = function(y) {
+    this.wizardParams.y = this.floor = y - this.wizardParams.h;
+  }
+
+  Wizard.prototype.draw = function(context) {
+    this.drawWizard(context);
+
+    this.fireballsArray.forEach(function(item) {
+      item.draw(context);
+    });
+
   }
 
   Wizard.prototype.update = function() {
     this.checkGravitation();
     this.keyBindings();
-  }
 
-  Wizard.prototype.setFloor = function(y) {
-    this.wizardParams.y = this.floor = y - this.wizardParams.h;
+    this.fireballsArray.forEach(function(item) {
+      item.update();
+    });
   }
 
   module.exports = Wizard;
