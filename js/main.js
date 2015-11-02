@@ -6,13 +6,15 @@
   var Game = require('./game.js');
   var Key = require('./key.js').Key;
   var Wizard = require('./wizard.js');
+  var Fireball = require('./fireball.js');
 
   var demo_container = document.querySelector(".demo");
-  console.log(Game);
   Game.initialize();
   Key.init();
 
   var wizard = new Wizard();
+
+  wizard.setFloor(Game.field.height);
 
   Game.addEntity(wizard);
 
@@ -58,41 +60,79 @@
 
 })();
 
-},{"./game.js":2,"./key.js":3,"./wizard.js":4}],2:[function(require,module,exports){
-"use stirct";
+},{"./fireball.js":2,"./game.js":3,"./key.js":4,"./wizard.js":5}],2:[function(require,module,exports){
+function Fireball(x, y, direction) {
+  this.startX = x;
+  this.startY = y;
+  this.direction = direction;
+  this.speed = 10;
 
-//module.exports = function() {
-  var Game = {};
-  Game.fps = 60;
-  Game.initialize = function() {
-    this.entities = [];
-    this.field = document.getElementById("demo");
-    this.context = this.field.getContext("2d");
+  this.image = new Image();
+  this.image.src = 'img/fireball.gif';
+}
+
+Fireball.prototype.draw = function(context) {
+
+  if (this.direction == 'right') {
+    context.drawImage(
+      this.image,
+      this.startX + 50,
+      this.startY
+    );
+  } else {
+    context.drawImage(
+      this.image,
+      this.startX + 20,
+      this.startY
+    );
   }
 
-  Game.draw = function() {
-    this.context.clearRect(0, 0, this.field.width, this.field.height);
+}
 
-    for (var i = 0; i < this.entities.length; i++) {
-      this.entities[i].draw(this.context);
-    }
+Fireball.prototype.update = function() {
+  switch (this.direction) {
+    case 'right':
+      this.startX += this.speed;
+      break;
+    case 'left':
+      this.startX -= this.speed;
   }
+}
 
-  Game.update = function() {
-    for (var i = 0; i < this.entities.length; i++) {
-      this.entities[i].update();
-    }
-  }
-
-  Game.addEntity = function(entity) {
-    Game.entities.push(entity);
-  };
-
-//  return Game;
-module.exports = Game;
-//}
+module.exports = Fireball;
 
 },{}],3:[function(require,module,exports){
+"use stirct";
+
+var Game = {};
+Game.fps = 60;
+Game.initialize = function() {
+  this.entities = [];
+  this.field = document.getElementById("demo");
+  this.context = this.field.getContext("2d");
+}
+
+Game.draw = function() {
+  this.context.clearRect(0, 0, this.field.width, this.field.height);
+
+  for (var i = 0; i < this.entities.length; i++) {
+    this.entities[i].draw(this.context);
+  }
+}
+
+Game.update = function() {
+  for (var i = 0; i < this.entities.length; i++) {
+    this.entities[i].update();
+  }
+}
+
+Game.addEntity = function(entity) {
+  Game.entities.push(entity);
+};
+
+module.exports = Game;
+
+},{}],4:[function(require,module,exports){
   var Key = {};
 
   var keyCodes = {
@@ -100,6 +140,7 @@ module.exports = Game;
     "left": 37,
     "right": 39,
     "down": 40,
+    "space": 32
   }
 
   var keyCodesMap = [37, 38, 39, 40];
@@ -123,69 +164,105 @@ module.exports = Game;
   module.exports.Key = Key;
   module.exports.keyCodes = keyCodes;
 
-},{}],4:[function(require,module,exports){
-  var Game = require('./game.js');
+},{}],5:[function(require,module,exports){
   var Keys = require('./key.js');
   var Key = Keys.Key;
   var keyCodes = Keys.keyCodes;
+
+  var Fireball = require('./fireball.js');
+
   var JUMP_TIME = 30;
+  var JUMP_FORCE = 10;
+  var JUMP_DELAY = 20;
 
   function Wizard() {
-    this.w = 93;
-    this.h = 90;
-    this.speed = 5;
-    this.image = new Image();
-    this.image.src = 'img/wizard.png';
+    this.wizardImage = new Image();
+    this.wizardImage.src = 'img/wizard.png';
+
     this.direction = 'right';
-    this.x = 0;
-    this.y = Game.field.height - this.h;
-    console.log(this.y, Game.field.height);
-    this.mass = 5;
-    this.jumpForce = 10;
-    this.jumpTime = JUMP_TIME;
+    this.fly = 0;
+    this.canShootFireball = 1;
+
+    this.wizardParams = {
+      w: 93,
+      h: 90,
+      x: 0,
+      y: 0,
+      speed: 5,
+      mass: 5
+    };
+
+    this.jumpParams = {
+      force: JUMP_FORCE,
+      time: JUMP_TIME,
+      delay: JUMP_DELAY,
+      minHeight: JUMP_TIME / 3,
+      currJumpTime: 0
+    };
+
+    //    this.fireballParams = {
+    //      startX: 0,
+    //      startY: 0,
+    //      direction: 'direction',
+    //      lifetime: 100,
+    //      speed: 10
+    //    }
+
+    /*Границы мира*/
     this.leftBorder = 0;
-    this.rightBorder = Game.field.width - this.w;
-    this.floor = Game.field.height - this.h;
+    this.rightBorder = 1024 - this.wizardParams.w;
+    this.floor = 0;
+
+    this.fireballsArray = [];
+    //    this.drawArray.push(this.drawWizard);
   }
 
-  Wizard.prototype.draw = function(context) {
+  Wizard.prototype.drawWizard = function(context) {
     if (this.direction == 'right') {
       context.drawImage(
-        this.image,
+        this.wizardImage,
         0,
         0,
-        this.w,
-        this.h,
-        this.x,
-        this.y,
-        this.w,
-        this.h);
+        this.wizardParams.w,
+        this.wizardParams.h,
+        this.wizardParams.x,
+        this.wizardParams.y,
+        this.wizardParams.w,
+        this.wizardParams.h);
     } else {
       context.drawImage(
-        this.image,
-        0 + this.w,
+        this.wizardImage,
+        0 + this.wizardParams.w,
         0,
-        this.w,
-        this.h,
-        this.x,
-        this.y,
-        this.w,
-        this.h);
+        this.wizardParams.w,
+        this.wizardParams.h,
+        this.wizardParams.x,
+        this.wizardParams.y,
+        this.wizardParams.w,
+        this.wizardParams.h);
     }
   }
 
   Wizard.prototype.checkGravitation = function() {
 
-    if (this.y < this.floor) {
-      this.y += this.mass;
+    if (this.wizardParams.y < this.floor) {
+      this.wizardParams.y += this.wizardParams.mass;
+      this.fly = 1;
     }
 
-    if (this.y > this.floor) {
-      this.y = this.floor;
+    if (this.wizardParams.y > this.floor) {
+      this.wizardParams.y = this.floor;
     }
 
-    if (this.y === this.floor) {
-      this.jumpTime = JUMP_TIME;
+    if (this.wizardParams.y === this.floor) {
+      this.fly = 0;
+
+      if (this.jumpParams.delay > 0) {
+        this.jumpParams.delay--;
+      } else {
+        this.jumpParams.currJumpTime = 0;
+        this.jumpParams.delay = JUMP_DELAY;
+      }
     }
 
   }
@@ -194,28 +271,27 @@ module.exports = Game;
     switch (direction) {
       case 'right':
         this.direction = 'right';
-        if (this.x < this.rightBorder) {
-          this.x += this.speed;
+        if (this.wizardParams.x < this.rightBorder) {
+          this.wizardParams.x += this.wizardParams.speed;
         }
         break;
       case 'left':
         this.direction = 'left';
-        if (this.x > this.leftBorder) {
-          this.x -= this.speed;
+        if (this.wizardParams.x > this.leftBorder) {
+          this.wizardParams.x -= this.wizardParams.speed;
         }
     }
   }
 
   Wizard.prototype.jump = function() {
-    if (this.jumpTime > 0) {
-      this.y -= this.jumpForce;
-      --this.jumpTime;
+    if (this.jumpParams.currJumpTime < this.jumpParams.time) {
+      var force = this.jumpParams.force - ((this.jumpParams.currJumpTime / (this.jumpParams.force)) * 2 | 0);
+      this.wizardParams.y -= force;
+      this.jumpParams.currJumpTime++;
     }
   }
 
-  Wizard.prototype.update = function() {
-    this.checkGravitation();
-
+  Wizard.prototype.keyBindings = function() {
     if (Key.map[keyCodes.right]) {
       this.moveTo('right');
     }
@@ -225,8 +301,50 @@ module.exports = Game;
     if (Key.map[keyCodes.up]) {
       this.jump();
     }
+    if ((!Key.map[keyCodes.up]) && this.fly && (this.jumpParams.currJumpTime <= this.jumpParams.minHeight)) {
+      this.jump();
+    }
+    if ((!Key.map[keyCodes.up]) && this.fly && (this.jumpParams.currJumpTime > this.jumpParams.minHeight)) {
+      this.jumpParams.currJumpTime = JUMP_TIME;
+    }
+
+    if (Key.map[keyCodes.space]) {
+      if (this.canShootFireball) {
+        this.canShootFireball = 0;
+        var fireball = new Fireball(this.wizardParams.x, this.wizardParams.y, this.direction);
+        this.fireballsArray.push(fireball);
+        setTimeout(function() {
+          this.fireballsArray.shift();
+        }.bind(this), 1000);
+        setTimeout(function() {
+          this.canShootFireball = 1;
+        }.bind(this), 300);
+      }
+    }
+  }
+
+  Wizard.prototype.setFloor = function(y) {
+    this.wizardParams.y = this.floor = y - this.wizardParams.h;
+  }
+
+  Wizard.prototype.draw = function(context) {
+    this.drawWizard(context);
+
+    this.fireballsArray.forEach(function(item) {
+      item.draw(context);
+    });
+
+  }
+
+  Wizard.prototype.update = function() {
+    this.checkGravitation();
+    this.keyBindings();
+
+    this.fireballsArray.forEach(function(item) {
+      item.update();
+    });
   }
 
   module.exports = Wizard;
 
-},{"./game.js":2,"./key.js":3}]},{},[1]);
+},{"./fireball.js":2,"./key.js":4}]},{},[1]);
