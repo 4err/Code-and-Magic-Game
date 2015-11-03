@@ -8,7 +8,7 @@ function Fireball(x, y, direction) {
   this.image.src = 'img/fireball.gif';
 }
 
-Fireball.prototype.draw = function(context) {
+Fireball.prototype.draw = function (context) {
 
   if (this.direction == 'right') {
     context.drawImage(
@@ -16,7 +16,8 @@ Fireball.prototype.draw = function(context) {
       this.startX + 50,
       this.startY
     );
-  } else {
+  }
+  else {
     context.drawImage(
       this.image,
       this.startX + 20,
@@ -26,7 +27,7 @@ Fireball.prototype.draw = function(context) {
 
 }
 
-Fireball.prototype.update = function() {
+Fireball.prototype.update = function () {
   switch (this.direction) {
     case 'right':
       this.startX += this.speed;

@@ -1,30 +1,30 @@
-  var Key = {};
+var Key = {};
 
-  var keyCodes = {
-    "up": 38,
-    "left": 37,
-    "right": 39,
-    "down": 40,
-    "space": 32
-  }
+var keyCodes = {
+  "up": 38,
+  "left": 37,
+  "right": 39,
+  "down": 40,
+  "space": 32
+}
 
-  var keyCodesMap = [37, 38, 39, 40];
+var keyCodesMap = [37, 38, 39, 40];
 
-  Key.map = [];
+Key.map = [];
 
-  Key.init = function() {
-    onkeydown = onkeyup = function(e) {
+Key.init = function () {
+  onkeydown = onkeyup = function (e) {
 
-      for (var i = 0; i < keyCodesMap.length; i++) {
-        if (e.keyCode == keyCodesMap[i]) {
-          e.preventDefault();
-        }
+    for (var i = 0; i < keyCodesMap.length; i++) {
+      if (e.keyCode == keyCodesMap[i]) {
+        e.preventDefault();
       }
-
-      e = e || event; // to deal with IE
-      Key.map[e.keyCode] = e.type == 'keydown';
     }
-  }
 
-  module.exports.Key = Key;
-  module.exports.keyCodes = keyCodes;
+    e = e || event; // to deal with IE
+    Key.map[e.keyCode] = e.type == 'keydown';
+  }
+}
+
+module.exports.Key = Key;
+module.exports.keyCodes = keyCodes;

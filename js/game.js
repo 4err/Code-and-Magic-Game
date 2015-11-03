@@ -2,13 +2,13 @@
 
 var Game = {};
 Game.fps = 60;
-Game.initialize = function() {
+Game.initialize = function () {
   this.entities = [];
   this.field = document.getElementById("demo");
   this.context = this.field.getContext("2d");
 }
 
-Game.draw = function() {
+Game.draw = function () {
   this.context.clearRect(0, 0, this.field.width, this.field.height);
 
   for (var i = 0; i < this.entities.length; i++) {
@@ -16,19 +16,19 @@ Game.draw = function() {
   }
 }
 
-Game.update = function() {
+Game.update = function () {
   for (var i = 0; i < this.entities.length; i++) {
     this.entities[i].update();
   }
 }
 
-Game.run = (function() {
+Game.run = (function () {
   var loops = 0,
-      skipTicks = 1000 / Game.fps,
-      maxFrameSkip = 10,
-      nextGameTick = (new Date).getTime();
+    skipTicks = 1000 / Game.fps,
+    maxFrameSkip = 10,
+    nextGameTick = (new Date).getTime();
 
-  return function() {
+  return function () {
     loops = 0;
 
     while ((new Date).getTime() > nextGameTick) {
@@ -40,7 +40,7 @@ Game.run = (function() {
     Game.draw();
   };
 })();
-Game.addEntity = function(entity) {
+Game.addEntity = function (entity) {
   Game.entities.push(entity);
 };
 

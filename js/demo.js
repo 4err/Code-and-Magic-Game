@@ -1,6 +1,6 @@
 "use stirct";
 
-(function() {
+(function () {
 
   var Game = require('./game.js');
   var Key = require('./key.js').Key;
