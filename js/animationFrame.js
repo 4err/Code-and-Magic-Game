@@ -1,5 +1,9 @@
 /**
- * Created by ����� on 02.11.2015.
+ * Created by ����� on 02.11.2015.
+ */
+/**
+ * Создание плавной анимации
+ * @type {Function}
  */
 module.exports = (function (cb) {
   if (window.requestAnimationFrame) {

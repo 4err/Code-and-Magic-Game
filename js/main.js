@@ -2,6 +2,10 @@
 /**
  * Created by ����� on 02.11.2015.
  */
+/**
+ * Создание плавной анимации
+ * @type {Function}
+ */
 module.exports = (function (cb) {
   if (window.requestAnimationFrame) {
     return function (cb) {
@@ -18,6 +22,9 @@ module.exports = (function (cb) {
 });
 
 },{}],2:[function(require,module,exports){
+/**
+ * Точка входа в приложение. Подключение и инициализация скриптов.
+ */
 "use stirct";
 
 (function () {
@@ -39,6 +46,13 @@ module.exports = (function (cb) {
 })();
 
 },{"./animationFrame.js":1,"./game.js":4,"./key.js":5,"./wizard.js":6}],3:[function(require,module,exports){
+/**
+ * Объект fireball.
+ * @param x координата
+ * @param y координата
+ * @param direction направление
+ * @constructor
+ */
 function Fireball(x, y, direction) {
   this.startX = x;
   this.startY = y;
@@ -81,16 +95,31 @@ Fireball.prototype.update = function () {
 module.exports = Fireball;
 
 },{}],4:[function(require,module,exports){
+/**
+ * Движок игры.
+ */
 "use stirct";
 
 var Game = {};
+
+/**
+ * Частота обновления кадров.
+ * @type {number}
+ */
 Game.fps = 60;
+
+/**
+ * Инициализация игровой области
+ */
 Game.initialize = function () {
   this.entities = [];
   this.field = document.getElementById("demo");
   this.context = this.field.getContext("2d");
 }
 
+/**
+ * Метод отрисовки всех объектов
+ */
 Game.draw = function () {
   this.context.clearRect(0, 0, this.field.width, this.field.height);
 
@@ -99,12 +128,18 @@ Game.draw = function () {
   }
 }
 
+/**
+ * Метод обновления всех объектов
+ */
 Game.update = function () {
   for (var i = 0; i < this.entities.length; i++) {
     this.entities[i].update();
   }
 }
 
+/**
+ * Игровой цикл.
+ */
 Game.run = (function () {
   var loops = 0,
     skipTicks = 1000 / Game.fps,
@@ -123,6 +158,11 @@ Game.run = (function () {
     Game.draw();
   };
 })();
+
+/**
+ * Метод добавления нового объекта в общий список.
+ * @param entity
+ */
 Game.addEntity = function (entity) {
   Game.entities.push(entity);
 };
@@ -130,6 +170,9 @@ Game.addEntity = function (entity) {
 module.exports = Game;
 
 },{}],5:[function(require,module,exports){
+/**
+ * Отлов нажатий клавиш
+ */
 var Key = {};
 
 var keyCodes = {
@@ -162,16 +205,38 @@ module.exports.Key = Key;
 module.exports.keyCodes = keyCodes;
 
 },{}],6:[function(require,module,exports){
+/**
+ * Описание объекта Маг.
+ * @type {exports|module.exports}
+ */
+var Game = require('./game.js');
 var Keys = require('./key.js');
 var Key = Keys.Key;
 var keyCodes = Keys.keyCodes;
 
 var Fireball = require('./fireball.js');
-
+/**
+ * Максимальная длительность прыжка в фрэймах.
+ * @type {number}
+ */
 var JUMP_TIME = 30;
+
+/**
+ * Сила прыжка
+ * @type {number}
+ */
 var JUMP_FORCE = 10;
+
+/**
+ * Задержка между прыжками.
+ * @type {number}
+ */
 var JUMP_DELAY = 20;
 
+/**
+ * Настройки объекта
+ * @constructor
+ */
 function Wizard() {
   this.wizardImage = new Image();
   this.wizardImage.src = 'img/wizard.png';
@@ -203,9 +268,12 @@ function Wizard() {
   this.floor = 0;
 
   this.fireballsArray = [];
-  //    this.drawArray.push(this.drawWizard);
 }
 
+/**
+ * Отрисовка мага
+ * @param context
+ */
 Wizard.prototype.drawWizard = function (context) {
   if (this.direction == 'right') {
     context.drawImage(
@@ -231,8 +299,11 @@ Wizard.prototype.drawWizard = function (context) {
       this.wizardParams.w,
       this.wizardParams.h);
   }
-}
+};
 
+/**
+ * Метод проверки гравитации.
+ */
 Wizard.prototype.checkGravitation = function () {
 
   if (this.wizardParams.y < this.floor) {
@@ -256,8 +327,12 @@ Wizard.prototype.checkGravitation = function () {
     }
   }
 
-}
+};
 
+/**
+ * Метод перемещения мага
+ * @param direction направление движения
+ */
 Wizard.prototype.moveTo = function (direction) {
   switch (direction) {
     case 'right':
@@ -272,16 +347,22 @@ Wizard.prototype.moveTo = function (direction) {
         this.wizardParams.x -= this.wizardParams.speed;
       }
   }
-}
+};
 
+/**
+ * Метод прыжка.
+ */
 Wizard.prototype.jump = function () {
   if (this.jumpParams.currJumpTime < this.jumpParams.time) {
     var force = this.jumpParams.force - ((this.jumpParams.currJumpTime / (this.jumpParams.force)) * 2 | 0);
     this.wizardParams.y -= force;
     this.jumpParams.currJumpTime++;
   }
-}
+};
 
+/**
+ * Обработка нажатий клавиш
+ */
 Wizard.prototype.keyBindings = function () {
   if (Key.map[keyCodes.right]) {
     this.moveTo('right');
@@ -312,12 +393,20 @@ Wizard.prototype.keyBindings = function () {
       }.bind(this), 300);
     }
   }
-}
+};
 
+/**
+ * Установка высоты пола для мага.
+ * @param y
+ */
 Wizard.prototype.setFloor = function (y) {
   this.wizardParams.y = this.floor = y - this.wizardParams.h;
-}
+};
 
+/**
+ * Отрисовка объекта
+ * @param context
+ */
 Wizard.prototype.draw = function (context) {
   this.drawWizard(context);
 
@@ -325,8 +414,11 @@ Wizard.prototype.draw = function (context) {
     item.draw(context);
   });
 
-}
+};
 
+/**
+ * Обновление объекта.
+ */
 Wizard.prototype.update = function () {
   this.checkGravitation();
   this.keyBindings();
@@ -334,8 +426,8 @@ Wizard.prototype.update = function () {
   this.fireballsArray.forEach(function (item) {
     item.update();
   });
-}
+};
 
 module.exports = Wizard;
 
-},{"./fireball.js":3,"./key.js":5}]},{},[2]);
+},{"./fireball.js":3,"./game.js":4,"./key.js":5}]},{},[2]);

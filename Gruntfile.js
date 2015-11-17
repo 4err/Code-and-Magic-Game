@@ -3,7 +3,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-http-server');
 
-  //grunt.registerTask('browserify123', ['browserify']);
   grunt.registerTask('default', ['http-server:dev', 'watch']);
 
   grunt.initConfig({
@@ -32,4 +31,4 @@ module.exports = function (grunt) {
       }
     }
   });
-}
+};

@@ -1,13 +1,35 @@
+/**
+ * Описание объекта Маг.
+ * @type {exports|module.exports}
+ */
+var Game = require('./game.js');
 var Keys = require('./key.js');
 var Key = Keys.Key;
 var keyCodes = Keys.keyCodes;
 
 var Fireball = require('./fireball.js');
-
+/**
+ * Максимальная длительность прыжка в фрэймах.
+ * @type {number}
+ */
 var JUMP_TIME = 30;
+
+/**
+ * Сила прыжка
+ * @type {number}
+ */
 var JUMP_FORCE = 10;
+
+/**
+ * Задержка между прыжками.
+ * @type {number}
+ */
 var JUMP_DELAY = 20;
 
+/**
+ * Настройки объекта
+ * @constructor
+ */
 function Wizard() {
   this.wizardImage = new Image();
   this.wizardImage.src = 'img/wizard.png';
@@ -39,9 +61,12 @@ function Wizard() {
   this.floor = 0;
 
   this.fireballsArray = [];
-  //    this.drawArray.push(this.drawWizard);
 }
 
+/**
+ * Отрисовка мага
+ * @param context
+ */
 Wizard.prototype.drawWizard = function (context) {
   if (this.direction == 'right') {
     context.drawImage(
@@ -67,8 +92,11 @@ Wizard.prototype.drawWizard = function (context) {
       this.wizardParams.w,
       this.wizardParams.h);
   }
-}
+};
 
+/**
+ * Метод проверки гравитации.
+ */
 Wizard.prototype.checkGravitation = function () {
 
   if (this.wizardParams.y < this.floor) {
@@ -92,8 +120,12 @@ Wizard.prototype.checkGravitation = function () {
     }
   }
 
-}
+};
 
+/**
+ * Метод перемещения мага
+ * @param direction направление движения
+ */
 Wizard.prototype.moveTo = function (direction) {
   switch (direction) {
     case 'right':
@@ -108,16 +140,22 @@ Wizard.prototype.moveTo = function (direction) {
         this.wizardParams.x -= this.wizardParams.speed;
       }
   }
-}
+};
 
+/**
+ * Метод прыжка.
+ */
 Wizard.prototype.jump = function () {
   if (this.jumpParams.currJumpTime < this.jumpParams.time) {
     var force = this.jumpParams.force - ((this.jumpParams.currJumpTime / (this.jumpParams.force)) * 2 | 0);
     this.wizardParams.y -= force;
     this.jumpParams.currJumpTime++;
   }
-}
+};
 
+/**
+ * Обработка нажатий клавиш
+ */
 Wizard.prototype.keyBindings = function () {
   if (Key.map[keyCodes.right]) {
     this.moveTo('right');
@@ -148,12 +186,20 @@ Wizard.prototype.keyBindings = function () {
       }.bind(this), 300);
     }
   }
-}
+};
 
+/**
+ * Установка высоты пола для мага.
+ * @param y
+ */
 Wizard.prototype.setFloor = function (y) {
   this.wizardParams.y = this.floor = y - this.wizardParams.h;
-}
+};
 
+/**
+ * Отрисовка объекта
+ * @param context
+ */
 Wizard.prototype.draw = function (context) {
   this.drawWizard(context);
 
@@ -161,8 +207,11 @@ Wizard.prototype.draw = function (context) {
     item.draw(context);
   });
 
-}
+};
 
+/**
+ * Обновление объекта.
+ */
 Wizard.prototype.update = function () {
   this.checkGravitation();
   this.keyBindings();
@@ -170,6 +219,6 @@ Wizard.prototype.update = function () {
   this.fireballsArray.forEach(function (item) {
     item.update();
   });
-}
+};
 
 module.exports = Wizard;

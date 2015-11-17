@@ -1,13 +1,28 @@
+/**
+ * Движок игры.
+ */
 "use stirct";
 
 var Game = {};
+
+/**
+ * Частота обновления кадров.
+ * @type {number}
+ */
 Game.fps = 60;
+
+/**
+ * Инициализация игровой области
+ */
 Game.initialize = function () {
   this.entities = [];
   this.field = document.getElementById("demo");
   this.context = this.field.getContext("2d");
 }
 
+/**
+ * Метод отрисовки всех объектов
+ */
 Game.draw = function () {
   this.context.clearRect(0, 0, this.field.width, this.field.height);
 
@@ -16,12 +31,18 @@ Game.draw = function () {
   }
 }
 
+/**
+ * Метод обновления всех объектов
+ */
 Game.update = function () {
   for (var i = 0; i < this.entities.length; i++) {
     this.entities[i].update();
   }
 }
 
+/**
+ * Игровой цикл.
+ */
 Game.run = (function () {
   var loops = 0,
     skipTicks = 1000 / Game.fps,
@@ -40,6 +61,11 @@ Game.run = (function () {
     Game.draw();
   };
 })();
+
+/**
+ * Метод добавления нового объекта в общий список.
+ * @param entity
+ */
 Game.addEntity = function (entity) {
   Game.entities.push(entity);
 };

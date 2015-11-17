@@ -1,3 +1,10 @@
+/**
+ * Объект fireball.
+ * @param x координата
+ * @param y координата
+ * @param direction направление
+ * @constructor
+ */
 function Fireball(x, y, direction) {
   this.startX = x;
   this.startY = y;
