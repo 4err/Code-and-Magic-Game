@@ -2,7 +2,7 @@
  * Описание объекта Маг.
  * @type {exports|module.exports}
  */
-var Game = require('./game.js');
+var setTimer = require('./timer.js');
 var Keys = require('./key.js');
 var Key = Keys.Key;
 var keyCodes = Keys.keyCodes;
@@ -174,16 +174,18 @@ Wizard.prototype.keyBindings = function () {
   }
 
   if (Key.map[keyCodes.space]) {
+
     if (this.canShootFireball) {
       this.canShootFireball = 0;
       var fireball = new Fireball(this.wizardParams.x, this.wizardParams.y, this.direction);
       this.fireballsArray.push(fireball);
-      setTimeout(function () {
-        this.fireballsArray.shift();
-      }.bind(this), 1000);
-      setTimeout(function () {
+
+      setTimer(function () {
         this.canShootFireball = 1;
-      }.bind(this), 300);
+      }.bind(this), 20);
+      setTimer(function () {
+        this.fireballsArray.shift();
+      }.bind(this), 60);
     }
   }
 };

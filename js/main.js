@@ -45,7 +45,7 @@ module.exports = (function (cb) {
 
 })();
 
-},{"./animationFrame.js":1,"./game.js":4,"./key.js":5,"./wizard.js":6}],3:[function(require,module,exports){
+},{"./animationFrame.js":1,"./game.js":4,"./key.js":5,"./wizard.js":7}],3:[function(require,module,exports){
 /**
  * Объект fireball.
  * @param x координата
@@ -134,6 +134,11 @@ Game.draw = function () {
 Game.update = function () {
   for (var i = 0; i < this.entities.length; i++) {
     this.entities[i].update();
+
+    /*Garbage*/
+    if (this.entities[i].status === -1) {
+      this.entities.splice(i, 1);
+    }
   }
 }
 
@@ -165,6 +170,16 @@ Game.run = (function () {
  */
 Game.addEntity = function (entity) {
   Game.entities.push(entity);
+};
+
+Game.isExistEntity = function (entity) {
+  for (var i = 0; i < this.entities.length; i++) {
+    this.entities[i].update();
+    if (this.entities[i] == entity) {
+      return true;
+    }
+  }
+  return false;
 };
 
 module.exports = Game;
@@ -206,10 +221,54 @@ module.exports.keyCodes = keyCodes;
 
 },{}],6:[function(require,module,exports){
 /**
+ * Created by Денис on 17.11.2015.
+ * Файл описывающий объект таймер.
+ */
+
+var Game = require('./game.js');
+
+/**
+ * Объект таймера
+ * @param fun функция
+ * @param time задержка
+ * @constructor
+ */
+function Timer(fun, time){
+  this.duration = time;
+  this.fun = fun;
+  this.status = 1;
+}
+/**
+ * Метод выполняющийся по обновлению состояния игры
+ */
+Timer.prototype.update = function(){
+    this.duration--;
+
+  if (this.duration === 0) {
+    this.status = -1;
+    this.duration = -1;
+    this.fun();
+  }
+};
+/**
+ * Метод отрисовывающий обновления состояния игры
+ */
+Timer.prototype.draw = function(){
+  //Nothing draw
+};
+
+setTimer = function(fun, time){
+  var timer = new Timer(fun, time);
+  Game.addEntity(timer);
+};
+module.exports = setTimer;
+
+},{"./game.js":4}],7:[function(require,module,exports){
+/**
  * Описание объекта Маг.
  * @type {exports|module.exports}
  */
-var Game = require('./game.js');
+var setTimer = require('./timer.js');
 var Keys = require('./key.js');
 var Key = Keys.Key;
 var keyCodes = Keys.keyCodes;
@@ -381,16 +440,18 @@ Wizard.prototype.keyBindings = function () {
   }
 
   if (Key.map[keyCodes.space]) {
+
     if (this.canShootFireball) {
       this.canShootFireball = 0;
       var fireball = new Fireball(this.wizardParams.x, this.wizardParams.y, this.direction);
       this.fireballsArray.push(fireball);
-      setTimeout(function () {
-        this.fireballsArray.shift();
-      }.bind(this), 1000);
-      setTimeout(function () {
+
+      setTimer(function () {
         this.canShootFireball = 1;
-      }.bind(this), 300);
+      }.bind(this), 20);
+      setTimer(function () {
+        this.fireballsArray.shift();
+      }.bind(this), 60);
     }
   }
 };
@@ -430,4 +491,4 @@ Wizard.prototype.update = function () {
 
 module.exports = Wizard;
 
-},{"./fireball.js":3,"./game.js":4,"./key.js":5}]},{},[2]);
+},{"./fireball.js":3,"./key.js":5,"./timer.js":6}]},{},[2]);

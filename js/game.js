@@ -37,6 +37,11 @@ Game.draw = function () {
 Game.update = function () {
   for (var i = 0; i < this.entities.length; i++) {
     this.entities[i].update();
+
+    /*Garbage*/
+    if (this.entities[i].status === -1) {
+      this.entities.splice(i, 1);
+    }
   }
 }
 
@@ -68,6 +73,16 @@ Game.run = (function () {
  */
 Game.addEntity = function (entity) {
   Game.entities.push(entity);
+};
+
+Game.isExistEntity = function (entity) {
+  for (var i = 0; i < this.entities.length; i++) {
+    this.entities[i].update();
+    if (this.entities[i] == entity) {
+      return true;
+    }
+  }
+  return false;
 };
 
 module.exports = Game;
