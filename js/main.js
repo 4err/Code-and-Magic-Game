@@ -33,6 +33,7 @@ module.exports = (function (cb) {
   var Key = require('./key.js').Key;
   var Wizard = require('./wizard.js');
   var onEachFrame = require('./animationFrame.js')();
+  var Interface = require('./interface.js');
 
   Game.initialize();
   Key.init();
@@ -41,11 +42,16 @@ module.exports = (function (cb) {
   wizard.setFloor(Game.field.height);
   Game.addEntity(wizard);
 
+  var interface = new Interface();
+  interface.setWizard(wizard);
+  Game.addEntity(interface);
+
+
   onEachFrame(Game.run);
 
 })();
 
-},{"./animationFrame.js":1,"./game.js":4,"./key.js":5,"./wizard.js":7}],3:[function(require,module,exports){
+},{"./animationFrame.js":1,"./game.js":4,"./interface.js":5,"./key.js":6,"./wizard.js":8}],3:[function(require,module,exports){
 /**
  * Объект fireball.
  * @param x координата
@@ -186,6 +192,51 @@ module.exports = Game;
 
 },{}],5:[function(require,module,exports){
 /**
+ * Created by Денис on 19.11.2015.
+ * Объект интерфейса игры.
+ */
+
+function Interface() {
+  this.health = 5;
+  this.mana = 5;
+
+  this.manaImg = new Image();
+  this.manaImg.src = 'img/icon-star.png';
+
+  this.emptyManaImg = new Image();
+  this.emptyManaImg.src = 'img/icon-star-inactive.png';
+};
+
+Interface.prototype.setWizard = function (wizard) {
+  this.wizard = wizard;
+  this.maxMana = this.wizard.wizardParams.maxMana;
+};
+
+Interface.prototype.update = function () {
+  this.mana = this.wizard.getMana();
+};
+
+Interface.prototype.draw = function (context) {
+  for (var i = 0; i < this.maxMana; i++) {
+    context.drawImage(
+      this.emptyManaImg,
+      35 * i,
+      100
+    );
+  }
+  for (var i = 0; i < this.mana; i++) {
+    context.drawImage(
+      this.manaImg,
+      35 * i,
+      100
+    );
+  }
+};
+
+module.exports = Interface;
+
+},{}],6:[function(require,module,exports){
+/**
  * Отлов нажатий клавиш
  */
 var Key = {};
@@ -195,7 +246,8 @@ var keyCodes = {
   "left": 37,
   "right": 39,
   "down": 40,
-  "space": 32
+  "space": 32,
+  "shift": 16
 }
 
 var keyCodesMap = [37, 38, 39, 40];
@@ -219,7 +271,7 @@ Key.init = function () {
 module.exports.Key = Key;
 module.exports.keyCodes = keyCodes;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /**
  * Created by Денис on 17.11.2015.
  * Файл описывающий объект таймер.
@@ -263,7 +315,7 @@ setTimer = function(fun, time){
 };
 module.exports = setTimer;
 
-},{"./game.js":4}],7:[function(require,module,exports){
+},{"./game.js":4}],8:[function(require,module,exports){
 /**
  * Описание объекта Маг.
  * @type {exports|module.exports}
@@ -293,6 +345,12 @@ var JUMP_FORCE = 10;
 var JUMP_DELAY = 20;
 
 /**
+ * Количество действий совершаемых за одну единицу маны.
+ * @type {number}
+ */
+var ACTIONS_PER_MANA = 5;
+
+/**
  * Настройки объекта
  * @constructor
  */
@@ -303,6 +361,9 @@ function Wizard() {
   this.direction = 'right';
   this.fly = 0;
   this.canShootFireball = 1;
+  this.manaCounter = 0;
+  this.needRestoreMana = 0;
+  this.restoringMana = 0;
 
   this.wizardParams = {
     w: 93,
@@ -310,7 +371,9 @@ function Wizard() {
     x: 0,
     y: 0,
     speed: 5,
-    mass: 5
+    mass: 5,
+    mana: 5,
+    maxMana: 5
   };
 
   this.jumpParams = {
@@ -364,7 +427,7 @@ Wizard.prototype.drawWizard = function (context) {
  * Метод проверки гравитации.
  */
 Wizard.prototype.checkGravitation = function () {
-
+if (!(Key.map[keyCodes.shift] && Key.map[keyCodes.up])) {
   if (this.wizardParams.y < this.floor) {
     this.wizardParams.y += this.wizardParams.mass;
     this.fly = 1;
@@ -385,7 +448,7 @@ Wizard.prototype.checkGravitation = function () {
       this.jumpParams.delay = JUMP_DELAY;
     }
   }
-
+}
 };
 
 /**
@@ -420,6 +483,33 @@ Wizard.prototype.jump = function () {
 };
 
 /**
+ * Метод полета.
+ */
+Wizard.prototype.fly = function () {
+  if (this.jumpParams.currJumpTime < this.jumpParams.time) {
+    var force = this.jumpParams.force - ((this.jumpParams.currJumpTime / (this.jumpParams.force)) * 2 | 0);
+    this.wizardParams.y -= force;
+    this.jumpParams.currJumpTime++;
+  }
+};
+
+/**
+ * Выстрел файрболлом
+ */
+Wizard.prototype.fireball = function () {
+  this.canShootFireball = 0;
+  var fireball = new Fireball(this.wizardParams.x, this.wizardParams.y, this.direction);
+  this.fireballsArray.push(fireball);
+
+  setTimer(function () {
+    this.canShootFireball = 1;
+  }.bind(this), 20);
+  setTimer(function () {
+    this.fireballsArray.shift();
+  }.bind(this), 60);
+};
+
+/**
  * Обработка нажатий клавиш
  */
 Wizard.prototype.keyBindings = function () {
@@ -440,18 +530,8 @@ Wizard.prototype.keyBindings = function () {
   }
 
   if (Key.map[keyCodes.space]) {
-
     if (this.canShootFireball) {
-      this.canShootFireball = 0;
-      var fireball = new Fireball(this.wizardParams.x, this.wizardParams.y, this.direction);
-      this.fireballsArray.push(fireball);
-
-      setTimer(function () {
-        this.canShootFireball = 1;
-      }.bind(this), 20);
-      setTimer(function () {
-        this.fireballsArray.shift();
-      }.bind(this), 60);
+      this.manaConsumption(this.fireball.bind(this));
     }
   }
 };
@@ -463,6 +543,53 @@ Wizard.prototype.keyBindings = function () {
 Wizard.prototype.setFloor = function (y) {
   this.wizardParams.y = this.floor = y - this.wizardParams.h;
 };
+
+/**
+ * Обертка для отслеживания потребления маны.
+ * @param action функция выполнения.
+ */
+Wizard.prototype.manaConsumption = function (action) {
+  if (this.wizardParams.mana > 0) {
+    if (this.manaCounter < ACTIONS_PER_MANA) {
+      this.manaCounter++;
+    } else {
+      this.wizardParams.mana--;
+      this.manaCounter = 0;
+    }
+
+    action();
+  } else {
+    if (!this.needRestoreMana && !this.restoringMana) {
+      console.log('work')
+      this.needRestoreMana = 1;
+    }
+  }
+};
+
+/**
+ * Получение текущего значения маны
+ * @returns {number}
+ */
+Wizard.prototype.getMana = function () {
+  return this.wizardParams.mana;
+};
+
+//Wizard.prototype.checkMana = function () {
+//if (this.needRestoreMana && !this.restoringMana) {
+//  this.restoringMana = 1;
+//  for (var i = 0; i < this.wizardParams.maxMana; i++) {
+//    setTimer(function () {
+//      this.wizardParams.mana++;
+//    }.bind(this), 60);
+//  }
+//
+//  //this.needRestoreMana = 0;
+//  //this.restoringMana = 0;
+//}
+//
+//this.needRestoreMana = 0;
+//this.restoringMana = 0;
+//};
 
 /**
  * Отрисовка объекта
@@ -483,6 +610,7 @@ Wizard.prototype.draw = function (context) {
 Wizard.prototype.update = function () {
   this.checkGravitation();
   this.keyBindings();
+  //this.checkMana();
 
   this.fireballsArray.forEach(function (item) {
     item.update();
@@ -491,4 +619,4 @@ Wizard.prototype.update = function () {
 
 module.exports = Wizard;
 
-},{"./fireball.js":3,"./key.js":5,"./timer.js":6}]},{},[2]);
+},{"./fireball.js":3,"./key.js":6,"./timer.js":7}]},{},[2]);

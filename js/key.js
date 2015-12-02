@@ -8,7 +8,8 @@ var keyCodes = {
   "left": 37,
   "right": 39,
   "down": 40,
-  "space": 32
+  "space": 32,
+  "shift": 16
 }
 
 var keyCodesMap = [37, 38, 39, 40];
